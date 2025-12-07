@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix Messenger</title>
+    <link rel="stylesheet" href="/messages-page/main.css">
+
+    <!-- Load Supabase FIRST -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/messages-page/messenger-app.js" defer></script>
+    <style>
+        /* Loading indicator */
+        #loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+        }
+
+        .loading-dots:after {
+            content: '.';
+            animation: dots 1.5s steps(5, end) infinite;
+        }
+
+        @keyframes dots {
+
+            0%,
+            20% {
+                content: '.';
+            }
+
+            40% {
+                content: '..';
+            }
+
+            60% {
+                content: '...';
+            }
+
+            80%,
+            100% {
+                content: '';
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Loading indicator -->
+    <div id="loading">
+        <h2>INITIALIZING MATRIX MESSENGER</h2>
+        <div class="loading-dots">LOADING</div>
+    </div>
+
+    <canvas id="matrix-bg"></canvas>
+
+    <div class="messenger-container" style="display: none;" id="app-container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title" id="sidebar-title">CYPHERTALK</div>
+                <div class="user-info" id="user-info"></div>
+                <input type="text" class="search-box" id="search-box" placeholder="Search users...">
+            </div>
+
+            <div class="sidebar-controls">
+                <button class="sidebar-btn logout" onclick="logout()">Logout</button>
+            </div>
+            <div class="conversations-list" id="conversations-list">
+                <div class="no-conversations">Initializing...</div>
+            </div>
+        </div>
+
+        <div class="chat-container">
+            <div class="chat-header">
+                <div class="chat-header-left">
+                    <div class="chat-header-title" id="chat-title">Select a user to chat with</div>
+                    <div class="chat-header-status" id="chat-header-status">Logged in - End-to-End Encrypted</div>
+                </div>
+                <div class="chat-header-buttons">
+                    <button class="decrypt-all-btn" id="decrypt-all-btn" onclick="showDecryptAllDialog()"
+                        style="display: none;">
+                        🔓 Decrypt All
+                    </button>
+                    <button class="delete-messages-btn" id="delete-messages-btn" onclick="deleteConversation()"
+                        style="display: none;">
+                        Delete Messages
+                    </button>
+                </div>
+            </div>
+
+            <div class="messages-container" id="messages-container">
+                <div class="no-messages">Select a user to start chatting</div>
+            </div>
+
+            <div class="input-container">
+                <div class="encryption-controls">
+                    <select class="cipher-select" id="cipher-select">
+                        <option value="Shift">Shift Cipher</option>
+                        <option value="Vigenere">Vigenère Cipher</option>
+                        <option value="Playfair">Playfair Cipher</option>
+                        <option value="Railfence">Rail Fence Cipher</option>
+                        <option value="Columnar">Columnar Cipher</option>
+                    </select>
+                    <input type="text" class="key-input" id="key-input" placeholder="Enter cipher key...">
+                </div>
+                <div class="message-input-row">
+                    <input type="text" class="message-input" id="message-input"
+                        placeholder="Type your encrypted message...">
+                    <button class="send-button">Encrypt & Send</button>
+                </div>
+            </div>
+        </div>
+        <!-- Decrypt Modal -->
+        <!-- Decrypt Popup -->
+        <div class="decrypt-popup" id="decrypt-popup" style="display: none;">
+            <div class="decrypt-popup-header">DECRYPT</div>
+            <input type="text" class="decrypt-popup-input" id="decrypt-key-input" placeholder="Enter key...">
+            <div class="decrypt-popup-buttons">
+                <button class="decrypt-popup-btn" onclick="decryptMessage()">✓</button>
+                <button class="decrypt-popup-btn cancel" onclick="closeDecryptModal()">✕</button>
+            </div>
+            <div class="decrypt-result" id="decrypt-result"></div>
+        </div>
+    </div>
+
+    <!-- Load main2.js AFTER HTML is parsed -->
+    <script src="/messages-page/messenger-app.js" defer></script>
+
+    <!-- Fallback script in case of errors -->
+    <script>
+        // Show app after 3 seconds (fallback)
+        setTimeout(() => {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('app-container').style.display = 'flex';
+        }, 3000);
+
+        // Check if Supabase loaded
+        setTimeout(() => {
+            if (!window.supabase) {
+                console.error('Supabase not loaded, retrying...');
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+                script.onload = () => {
+                    console.log('Supabase loaded dynamically');
+                    if (window.initializeApp) window.initializeApp();
+                };
+                document.head.appendChild(script);
+            }
+        }, 1000);
+    </script>
+    <!-- Joint Password Setup Modal -->
+    <div class="joint-password-modal" id="joint-password-modal" style="display: none;">
+        <div class="joint-password-content">
+            <h2 id="joint-password-title">Setup Joint Password</h2>
+            <p id="joint-password-message">Enter a password that both users will use to decrypt messages.</p>
+
+            <div id="password-input-section">
+                <input type="password" id="joint-password-input" class="joint-password-input"
+                    placeholder="Enter password...">
+                <div class="joint-password-buttons">
+                    <button class="joint-password-btn confirm" onclick="submitJointPassword()">✓ Confirm</button>
+                    <button class="joint-password-btn cancel" onclick="closeJointPasswordModal()">✕ Cancel</button>
+                </div>
+            </div>
+
+            <div id="waiting-section" style="display: none;">
+                <div class="waiting-spinner">⏳</div>
+                <p class="waiting-text">Waiting for <span id="waiting-for-user"></span> to respond...</p>
+                <button class="joint-password-btn cancel" onclick="cancelJointPassword()">Cancel Request</button>
+            </div>
+
+            <div id="request-section" style="display: none;">
+                <p class="request-message"><strong id="requesting-user"></strong> wants to establish a joint password to
+                    decrypt all messages.</p>
+                <input type="password" id="joint-password-response-input" class="joint-password-input"
+                    placeholder="Enter the password they shared with you...">
+                <div class="joint-password-buttons">
+                    <button class="joint-password-btn confirm" onclick="acceptJointPassword()">✓ Accept</button>
+                    <button class="joint-password-btn cancel" onclick="declineJointPassword()">✕ Decline</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Decrypt All Messages Modal -->
+    <div class="decrypt-all-modal" id="decrypt-all-modal" style="display: none;">
+        <div class="decrypt-all-content">
+            <h2>Decrypt All Messages</h2>
+            <p>Enter your joint password to decrypt all messages in this conversation.</p>
+            <input type="password" id="decrypt-all-password-input" class="joint-password-input"
+                placeholder="Enter joint password...">
+            <div id="decrypt-all-result" class="decrypt-result"></div>
+            <div class="joint-password-buttons">
+                <button class="joint-password-btn confirm" onclick="decryptAllMessages()">🔓 Decrypt</button>
+                <button class="joint-password-btn cancel" onclick="closeDecryptAllModal()">✕ Cancel</button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
