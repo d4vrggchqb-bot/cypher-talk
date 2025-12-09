@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    { "source": "/", "destination": "/flash-screen/flash-screen.html" },
+    { "source": "/onboarding", "destination": "/Onboarding-screen/obs.html" },
+    { "source": "/features", "destination": "/features-page/feature-page.html" },
+    { "source": "/about", "destination": "/about-us-page/about.html" },
+    { "source": "/login", "destination": "/login-page/index.html" },
+    { "source": "/messages", "destination": "/messages-page/main.html" },
+    { "source": "/profile", "destination": "/userInfo-page/userInfo.html" },
+    { "source": "/profile/view", "destination": "/userInfo-page/userView.html" }
+  ]
+}

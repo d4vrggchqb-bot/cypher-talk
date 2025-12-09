@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>View Profile — Cypher Talk</title>
+  <link rel="stylesheet" href="../messages-page/main.css">
+  <link rel="stylesheet" href="userInfo.css">
+  <!-- Load Supabase client (same as other pages) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+
+  <!-- Matrix background canvas -->
+  <canvas id="matrixCanvas"></canvas>
+
+  <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <div class="profile-container">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <a href="/messages-page/main.html" class="btn btn-ghost" title="Back to Messenger">← Back</a>
+    </div>
+
+    <h1>User Profile (Public View)</h1>
+    <p class="small">This is how others see your profile</p>
+
+    <div class="profile-grid">
+      <div class="card">
+        <div style="text-align:center">
+          <img id="viewerAvatar" class="avatar" alt="Avatar" src="/userInfo-page/defaultavatar.png">
+          <div id="viewerName" class="small" style="margin-top:8px;font-weight:700;color:var(--neon)"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Details</h2>
+        <div class="form-row"><strong>Display Name:</strong> <span id="viewerDisplay"></span></div>
+        <div class="form-row"><strong>First / Last:</strong> <span id="viewerFirstLast"></span></div>
+        <div class="form-row"><strong>Email:</strong> <span id="viewerEmail"></span></div>
+        <div class="form-row"><strong>About:</strong>
+          <div id="viewerDescription" style="white-space:pre-wrap;margin-top:6px;color:var(--muted)"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="userView.js"></script>
+
+  <script>
+    // Simple matrix background (matches userInfo page)
+    (function () {
+      const canvas = document.getElementById('matrixCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+
+      let fontSize = 16;
+      let letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZアカサタナハマヤラワ".split("");
+      let columns = Math.floor(window.innerWidth / fontSize) || 1;
+      let drops = [];
+      function initDrops() {
+        columns = Math.floor(window.innerWidth / fontSize) || 1;
+        drops = new Array(columns);
+        for (let i = 0; i < columns; i++) drops[i] = Math.random() * -100;
+      }
+
+      function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        initDrops();
+      }
+      window.addEventListener('resize', resize, { passive: true });
+      resize();
+
+      function draw() {
+        ctx.fillStyle = 'rgba(0,0,0,0.08)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#0F0';
+        ctx.font = fontSize + 'px monospace';
+        for (let i = 0; i < drops.length; i++) {
+          const text = letters[Math.floor(Math.random() * letters.length)];
+          ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+          if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+          drops[i]++;
+        }
+      }
+
+      setInterval(draw, 40);
+    })();
+  </script>
+</body>
+
+</html>

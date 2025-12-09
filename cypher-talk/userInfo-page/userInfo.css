@@ -1,0 +1,153 @@
+/* Adapted to match the neon dark theme in `main.css` */
+:root{
+  --bg-grad: linear-gradient(135deg, #0a0a0a 0%, #1a001a 100%);
+  --neon: #00ff9f;
+  --neon-accent: #00ccff;
+  --muted: rgba(255,255,255,0.6);
+  --card-bg: rgba(10,10,10,0.9);
+  --card-border: rgba(0,255,159,0.12);
+}
+
+/* Matrix canvas (neon styled) */
+/* Canvas background for matrix effect */
+#matrixCanvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+}
+
+/* Override main.css which sets `height:100vh` and `overflow:hidden` globally.
+   That prevents scrolling on pages that reuse the messenger theme.
+   Force body/html to allow scrolling on this profile page. */
+html, body {
+  height: auto !important;
+  min-height: 100vh;
+  overflow: auto !important;
+}
+
+body{
+  background: var(--bg-grad);
+  color: var(--neon);
+  font-family: 'Courier New', monospace;
+  margin: 0;
+  padding: 12px;
+}
+
+/* Matrix canvas sits behind content */
+/* matrix canvas removed */
+
+.profile-container{ max-width:980px; margin:36px auto; padding:18px; }
+.profile-container h1{ margin:0 0 6px; font-size:1.6rem; color:var(--neon); text-shadow:0 0 8px var(--neon); }
+.profile-container p.small{ margin:0 0 18px; color:var(--muted); }
+
+.profile-grid{ display:grid; grid-template-columns:320px 1fr; gap:18px; align-items:start; }
+
+.card{
+  padding:16px; border-radius:8px; background:var(--card-bg); box-shadow:0 0 28px rgba(0,255,159,0.06); border:1px solid rgba(0,255,159,0.12);
+  /* neon outline */
+  position:relative;
+}
+.card:before{
+  content: '';
+  position: absolute; inset: -1px; border-radius:9px; z-index: -1;
+  box-shadow: 0 0 10px rgba(0,255,159,0.08), 0 0 20px rgba(0,204,255,0.04);
+}
+
+/* Add neon outline to other containers */
+.profile-container, .profile-grid > div {
+  position: relative;
+}
+.profile-container:before, .profile-grid > div:before {
+  content: '';
+  position: absolute; inset: 0; pointer-events: none; border-radius: 10px;
+  box-shadow: 0 0 8px rgba(0,255,159,0.03), 0 0 16px rgba(0,255,159,0.02) inset;
+  z-index: -1; /* keep the subtle outline behind content so images are visible */
+}
+
+.avatar{ width:160px; height:160px; border-radius:12px; object-fit:cover; background:rgba(0,255,159,0.03); display:block; margin:0 auto 12px; border:2px solid rgba(0,255,159,0.15); box-shadow:0 0 12px rgba(0,255,159,0.06); }
+
+/* Make the avatar clearly clickable: overlay and pointer */
+.avatar-picker{ display:block; position:relative; width:160px; margin:0 auto 12px; cursor:pointer; }
+.avatar-picker .avatar{ display:block; }
+.avatar-overlay{ position:absolute; left:50%; transform:translateX(-50%); bottom:10px; background: rgba(0,0,0,0.6); color:var(--neon); padding:6px 10px; border-radius:999px; font-weight:700; font-family:'Courier New', monospace; opacity:0; transition:opacity .14s, box-shadow .14s; border:1px solid rgba(0,255,159,0.08); pointer-events:none; }
+.avatar-picker:hover .avatar-overlay, .avatar-picker:focus-within .avatar-overlay{ opacity:1; pointer-events:auto; box-shadow:0 6px 18px rgba(0,255,159,0.08); }
+
+/* hide the raw avatar input (we use label/overlay) */
+#avatarInput{ display:none !important; }
+
+label{ display:block; margin-bottom:6px; font-weight:600; color:var(--neon); }
+.form-row{ margin-bottom:12px; }
+.small{ font-size:0.9rem; color:var(--muted); }
+
+input[type="text"], input[type="email"], input[type="password"], textarea{
+  width:100%; padding:10px 12px; border-radius:6px; border:1px solid rgba(0,255,159,0.12); background:rgba(0,0,0,0.6); color:var(--neon); box-sizing:border-box; font-size:0.95rem; font-family:'Courier New', monospace; transition: box-shadow .18s, border-color .18s;
+}
+
+textarea{ min-height:110px; resize:vertical; }
+
+.actions{ display:flex; gap:8px; align-items:center; justify-content:center; flex-wrap:wrap }
+
+.btn{ display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:6px; cursor:pointer; border:1px solid transparent; background:transparent; color:var(--neon); font-family:'Courier New', monospace; }
+.btn-primary{ background:transparent; border:2px solid var(--neon); color:var(--neon); }
+.btn-primary:hover{ box-shadow:0 0 12px rgba(0,255,159,0.18); }
+.btn-ghost{ background:transparent; border:1px solid rgba(0,255,159,0.08); }
+
+.message{ margin-top:8px; font-weight:600; color:var(--neon); }
+
+/* responsiveness */
+@media (max-width:900px){
+  .profile-grid{ grid-template-columns: 1fr; }
+  .avatar{ margin-bottom: 14px; }
+}
+
+/* small helpers for file inputs */
+input[type="file"]{ display:block; color:var(--neon); }
+
+.card h2{ margin-top:0; margin-bottom:12px; color:var(--neon-accent); text-shadow:0 0 8px var(--neon-accent); }
+
+/* subtle focus state */
+input:focus, textarea:focus { outline: none; box-shadow: 0 0 10px rgba(0,255,159,0.12), 0 0 18px rgba(0,204,255,0.04); border-color: var(--neon-accent); }
+
+/* align buttons row */
+.profile-form-actions{ display:flex; gap:10px; align-items:center; }
+
+.error { color:#ff4d6d !important; }
+.success { color:#7CFC9A !important; }
+
+/* Toast styles */
+#toast-container{
+  position: fixed; right: 18px; bottom: 18px; display:flex; flex-direction:column; gap:10px; z-index:9999; width:320px; pointer-events: none;
+}
+.toast{
+  pointer-events: auto;
+  display:block; background: rgba(0,0,0,0.75); color: var(--neon); padding:10px 12px; border-radius:8px; border:1px solid rgba(0,255,159,0.12);
+  box-shadow: 0 4px 10px rgba(0,255,159,0.045); transform: translateY(12px); opacity:0; transition: all 220ms ease; font-family:'Courier New', monospace;
+}
+.toast.visible{ transform: translateY(0); opacity:1; }
+.toast.success{ border-color: rgba(0,255,159,0.14); box-shadow: 0 0 10px rgba(0,255,159,0.08), 0 4px 12px rgba(0,255,159,0.03); }
+.toast.error{ border-color: rgba(255,77,109,0.12); box-shadow: 0 0 8px rgba(255,77,109,0.06), 0 4px 12px rgba(255,77,109,0.02); color:#ff8aa2; }
+.toast .toast-body{ font-size:0.95rem; }
+
+
+/* Neon scrollbar styles */
+/* WebKit (Chrome, Edge, Safari) */
+::-webkit-scrollbar { width: 12px; height: 12px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(0,255,159,0.92), rgba(0,204,255,0.85));
+  border-radius: 999px;
+  border: 2px solid rgba(0,0,0,0.28);
+  box-shadow: 0 0 6px rgba(0,255,159,0.16);
+}
+::-webkit-scrollbar-thumb:hover { box-shadow: 0 0 10px rgba(0,255,159,0.22); }
+::-webkit-scrollbar-corner { background: transparent; }
+
+/* Firefox */
+html { scrollbar-width: thin; scrollbar-color: rgba(0,255,159,0.95) transparent; }
+
+/* Ensure scrollbars are visible in dark theme */
+body, .card, .profile-container, .profile-grid { scrollbar-color: rgba(0,255,159,0.9) rgba(10,10,10,0.6); }
+

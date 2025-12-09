@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix Messenger</title>
+    <link rel="stylesheet" href="/messages-page/main.css">
+
+    <!-- Load Supabase FIRST -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        /* Loading indicator */
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a001a 100%);
+            z-index: 9999;
+        }
+
+        #loading-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.08;
+        }
+
+        #loading-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+        }
+
+        #loading-title {
+            color: #00ff9f;
+            font-family: 'Courier New', monospace;
+            font-size: 32px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px #00ff9f, 0 0 20px rgba(0, 255, 159, 0.5);
+            min-height: 40px;
+            margin-bottom: 20px;
+        }
+
+        .loading-dots {
+            color: #00ccff;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            letter-spacing: 2px;
+        }
+
+        .loading-dots:after {
+            content: '.';
+            animation: dots 1.5s steps(5, end) infinite;
+        }
+
+        @keyframes dots {
+
+            0%,
+            20% {
+                content: '.';
+            }
+
+            40% {
+                content: '..';
+            }
+
+            60% {
+                content: '...';
+            }
+
+            80%,
+            100% {
+                content: '';
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Loading indicator -->
+    <div id="loading">
+        <canvas id="loading-canvas"></canvas>
+        <div id="loading-content">
+            <h2 id="loading-title"></h2>
+            <div class="loading-dots">LOADING</div>
+        </div>
+    </div>
+
+    <canvas id="matrix-bg"></canvas>
+
+    <div class="messenger-container" style="display: none;" id="app-container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title" id="sidebar-title">CYPHERTALK</div>
+                <div class="user-info" id="user-info"></div>
+                <div style="text-align: center; margin-top: 10px;">
+                    <a href="/userInfo-page/userInfo.html" class="btn"
+                        style="font-size: 12px; padding: 8px 12px; border: 1px solid #00ccff; color: #00ccff; text-decoration: none; border-radius: 4px; display: inline-block;">
+                        ⚙️ Edit Profile
+                    </a>
+                </div>
+                <input type="text" class="search-box" id="search-box" placeholder="Search users...">
+            </div>
+
+            <div class="sidebar-controls">
+                <button class="sidebar-btn logout" onclick="logout()">Logout</button>
+            </div>
+            <div class="conversations-list" id="conversations-list">
+                <div class="no-conversations">Initializing...</div>
+            </div>
+        </div>
+
+        <div class="chat-container">
+            <div class="chat-header">
+                <div class="chat-header-left">
+                    <div class="chat-header-title" id="chat-title">Select a user to chat with</div>
+                    <div class="chat-header-status" id="chat-header-status">Logged in - End-to-End Encrypted</div>
+                </div>
+                <div class="chat-header-buttons">
+                    <button class="decrypt-all-btn" id="decrypt-all-btn" onclick="showDecryptAllDialog()"
+                        style="display: none;">
+                        🔓 Decrypt All
+                    </button>
+                    <button class="delete-messages-btn" id="delete-messages-btn" onclick="deleteConversation()"
+                        style="display: none;">
+                        Delete Messages
+                    </button>
+                </div>
+            </div>
+
+            <div class="messages-container" id="messages-container">
+                <div class="no-messages">Select a user to start chatting</div>
+            </div>
+
+            <div class="input-container">
+                <div class="encryption-controls">
+                    <select class="cipher-select" id="cipher-select">
+                        <option value="Shift">Shift Cipher</option>
+                        <option value="Vigenere">Vigenère Cipher</option>
+                        <option value="Playfair">Playfair Cipher</option>
+                        <option value="Railfence">Rail Fence Cipher</option>
+                        <option value="Columnar">Columnar Cipher</option>
+                    </select>
+                    <input type="text" class="key-input" id="key-input" placeholder="Enter cipher key...">
+                </div>
+                <div class="message-input-row">
+                    <input type="text" class="message-input" id="message-input"
+                        placeholder="Type your encrypted message...">
+                    <button class="send-button">Encrypt & Send</button>
+                </div>
+            </div>
+        </div>
+        <!-- Decrypt Popup -->
+        <div class="decrypt-popup" id="decrypt-popup" style="display: none;">
+            <div class="decrypt-popup-header">DECRYPT</div>
+            <input type="text" class="decrypt-popup-input" id="decrypt-key-input" placeholder="Enter key...">
+            <div class="decrypt-popup-buttons">
+                <button class="decrypt-popup-btn" onclick="decryptMessage()">✓</button>
+                <button class="decrypt-popup-btn cancel" onclick="closeDecryptModal()">✕</button>
+            </div>
+            <div class="decrypt-result" id="decrypt-result"></div>
+        </div>
+    </div>
+
+    <!-- Load main2.js AFTER HTML is parsed -->
+    <script src="/messages-page/messenger-app.js" defer></script>
+
+    <!-- Loading screen script -->
+    <script>
+        // Matrix rain for loading screen
+        const loadingCanvas = document.getElementById('loading-canvas');
+        const loadingCtx = loadingCanvas.getContext('2d');
+
+        loadingCanvas.width = window.innerWidth;
+        loadingCanvas.height = window.innerHeight;
+
+        const chars = 'ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ0123456789';
+        const fontSize = 16;
+        const columns = loadingCanvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+
+        function drawLoadingMatrix() {
+            loadingCtx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            loadingCtx.fillRect(0, 0, loadingCanvas.width, loadingCanvas.height);
+
+            loadingCtx.fillStyle = '#00ff9f';
+            loadingCtx.font = fontSize + 'px monospace';
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = chars[Math.floor(Math.random() * chars.length)];
+                loadingCtx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                if (drops[i] * fontSize > loadingCanvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+
+        const loadingMatrixInterval = setInterval(drawLoadingMatrix, 33);
+
+        // Glitch text animation for loading title
+        const loadingTitle = document.getElementById('loading-title');
+        const finalText = 'INITIALIZING MATRIX MESSENGER';
+        const glitchChars = '!@#$%^&*()_+-=[]{}|;:,.<>?/~`0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+        let currentIndex = 0;
+
+        function glitchLoadingText() {
+            if (currentIndex < finalText.length) {
+                let displayText = finalText.substring(0, currentIndex);
+
+                // Add glitching characters for remaining positions
+                for (let i = currentIndex; i < finalText.length; i++) {
+                    displayText += glitchChars[Math.floor(Math.random() * glitchChars.length)];
+                }
+
+                loadingTitle.textContent = displayText;
+            } else {
+                loadingTitle.textContent = finalText;
+                clearInterval(glitchInterval);
+            }
+        }
+
+        // Run glitch effect multiple times per character
+        let glitchCount = 0;
+        const glitchInterval = setInterval(() => {
+            glitchLoadingText();
+            glitchCount++;
+
+            if (glitchCount % 8 === 0) {
+                currentIndex++;
+            }
+        }, 50);
+
+        // Hide loading screen after initialization
+        window.hideLoadingScreen = function () {
+            clearInterval(loadingMatrixInterval);
+            clearInterval(glitchInterval);
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('app-container').style.display = 'flex';
+        };
+
+        // Fallback: show app after 5 seconds
+        setTimeout(() => {
+            if (document.getElementById('loading').style.display !== 'none') {
+                window.hideLoadingScreen();
+            }
+        }, 5000);
+
+        // Check if Supabase loaded
+        setTimeout(() => {
+            if (!window.supabase) {
+                console.error('Supabase not loaded, retrying...');
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+                script.onload = () => {
+                    console.log('Supabase loaded dynamically');
+                    if (window.initializeApp) window.initializeApp();
+                };
+                document.head.appendChild(script);
+            }
+        }, 1000);
+
+        // Resize handler
+        window.addEventListener('resize', () => {
+            loadingCanvas.width = window.innerWidth;
+            loadingCanvas.height = window.innerHeight;
+        });
+    </script>
+    <!-- Joint Password Setup Modal -->
+    <div class="joint-password-modal" id="joint-password-modal" style="display: none;">
+        <div class="joint-password-content">
+            <h2 id="joint-password-title">Setup Joint Password</h2>
+            <p id="joint-password-message">Enter a password that both users will use to decrypt messages.</p>
+
+            <div id="password-input-section">
+                <input type="password" id="joint-password-input" class="joint-password-input"
+                    placeholder="Enter password...">
+                <div class="joint-password-buttons">
+                    <button class="joint-password-btn confirm" onclick="submitJointPassword()">✓ Confirm</button>
+                    <button class="joint-password-btn cancel" onclick="closeJointPasswordModal()">✕ Cancel</button>
+                </div>
+            </div>
+
+            <div id="waiting-section" style="display: none;">
+                <div class="waiting-spinner">⏳</div>
+                <p class="waiting-text">Waiting for <span id="waiting-for-user"></span> to respond...</p>
+                <button class="joint-password-btn cancel" onclick="cancelJointPassword()">Cancel Request</button>
+            </div>
+
+            <div id="request-section" style="display: none;">
+                <p class="request-message"><strong id="requesting-user"></strong> wants to establish a joint password to
+                    decrypt all messages.</p>
+                <input type="password" id="joint-password-response-input" class="joint-password-input"
+                    placeholder="Enter the password they shared with you...">
+                <div class="joint-password-buttons">
+                    <button class="joint-password-btn confirm" onclick="acceptJointPassword()">✓ Accept</button>
+                    <button class="joint-password-btn cancel" onclick="declineJointPassword()">✕ Decline</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Decrypt All Messages Modal -->
+    <div class="decrypt-all-modal" id="decrypt-all-modal" style="display: none;">
+        <div class="decrypt-all-content">
+            <h2>Decrypt All Messages</h2>
+            <p>Enter your joint password to decrypt all messages in this conversation.</p>
+            <input type="password" id="decrypt-all-password-input" class="joint-password-input"
+                placeholder="Enter joint password...">
+            <div id="decrypt-all-result" class="decrypt-result"></div>
+            <div class="joint-password-buttons">
+                <button class="joint-password-btn confirm" onclick="decryptAllMessages()">🔓 Decrypt</button>
+                <button class="joint-password-btn cancel" onclick="closeDecryptAllModal()">✕ Cancel</button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
