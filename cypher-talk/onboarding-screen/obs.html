@@ -1,0 +1,120 @@
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CypherTalks - Keeping Conversation Private and in Secret</title>
+  <link rel="stylesheet" href="/onboarding-screen/obs.css">
+  <!-- In the <head> section, add this if you want custom styling for the logo -->
+  <style>
+    .cyphertalks-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #00ff9f;
+      text-shadow: 0 0 10px rgba(0, 255, 159, 0.8);
+      letter-spacing: 2px;
+      font-family: 'Courier New', monospace;
+      text-transform: uppercase;
+    }
+
+    .cyphertalks-logo::before {
+      content: '🔐';
+      font-size: 1.8rem;
+      filter: drop-shadow(0 0 10px #00ff9f);
+    }
+
+    .logo-image {
+      height: 40px;
+      /* Adjust based on your needs */
+      width: auto;
+      filter: drop-shadow(0 0 5px #00ff9f);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg-animation"></div>
+
+  <header>
+    <div class="sidebar-title" id="sidebar-title">
+      <img src="/logo.jpg" alt="CypherTalks" class="logo-image">
+    </div>
+    <nav>
+      <a href="#features">Features</a>
+      <a href="/about-us-page/about.html">About</a>
+      <a href="/login-page/login-page.html" class="btn btn-primary">Get Started</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <h1>Keeping Conversation<br>Private and in Secret</h1>
+    <p>End-to-end encrypted messaging that ensures your privacy.<br>No data collection. No compromises.</p>
+    <div class="hero-buttons">
+      <a href="/login-page/login-page.html" class="btn btn-primary">Get Started</a>
+      <a href="#features" class="btn btn-secondary">Learn More</a>
+    </div>
+  </section>
+
+  <section class="features" id="features">
+    <h2 class="features-title">KEY FUNCTIONALITIES</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <span class="feature-icon">⛓️</span>
+        <h3>Client-Side Ciphering</h3>
+        <p>Users encrypt their plaintext messages using a selected cipher (e.g., Caesar, Vigenère) *before* sending.
+          Only
+          the encrypted text is transmitted.</p>
+      </div>
+
+      <div class="feature-card">
+        <span class="feature-icon">🗝️</span>
+        <h3>Manual Decryption</h3>
+        <p>Messages received by users must be manually decrypted using the corresponding key and cipher method, giving
+          you
+          full security oversight.</p>
+      </div>
+
+      <div class="feature-card">
+        <span class="feature-icon">🚀</span>
+        <h3>Supabase Integration</h3>
+        <p>Leveraging **Supabase** for secure user authentication, robust database storage, and fast, multi-user,
+          real-time communication channels.</p>
+      </div>
+
+      <div class="feature-card">
+        <span class="feature-icon">💬</span>
+        <h3>Multi-User Chat Platform</h3>
+        <p>Join or create private groups and direct message channels built to handle high volumes of encrypted
+          communication.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="stats">
+    <div class="stat">
+      <div class="stat-number">10M+</div>
+      <div class="stat-label">Active Users</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number">50B+</div>
+      <div class="stat-label">Encrypted Messages</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number">150+</div>
+      <div class="stat-label">Countries</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number">99.9%</div>
+      <div class="stat-label">Uptime</div>
+    </div>
+  </section>
+
+  <footer>
+    <p>&copy; 2025 CypherTalks. Keeping conversation private and in secret.</p>
+  </footer>
+
+  <script src="obs.js"></script>
+</body>
+
+</html>

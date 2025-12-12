@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CypherTalk Login</title>
+    <link rel="stylesheet" href="/login-page/login-page.css">
+    <!-- Add this line -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+    <canvas id="matrix-bg"></canvas>
+    <canvas id="matrix-bg-modal"></canvas>
+
+    <div class="login-container">
+        <h1 class="login-title" id="glitch-title"></h1>
+
+        <form id="login-form" onsubmit="return handleSubmit(event)">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" placeholder="Enter your username" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Enter your password" required>
+            </div>
+
+            <button type="submit" class="submit-btn">Access System</button>
+
+            <div class="divider">
+                <span>OR</span>
+            </div>
+
+            <div class="auth-actions">
+                <button type="button" class="create-account-btn" onclick="createAccount()">Create New Account</button>
+                <button type="button" id="anonSignBtn" class="create-account-btn">Sign in Anonymously</button>
+            </div>
+        </form>
+
+        <div class="footer-links">
+            <a href="#" onclick="forgotPassword()">Forgot Password?</a>
+            <a href="#" onclick="showHelp()">Help & Support</a>
+        </div>
+
+        <div class="subtitle">What happens here, stays here...</div>
+    </div>
+
+    <!-- Modal for account creation -->
+    <div class="modal" id="account-modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <h2>CREATE ACCOUNT</h2>
+
+            <form id="create-account-form">
+                <div class="form-group">
+                    <label for="new-username">Choose Username</label>
+                    <input type="text" id="new-username" placeholder="Enter username" required>
+                    <div class="username-availability" id="username-status"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="new-password">Create Password</label>
+                    <input type="password" id="new-password" placeholder="Enter password" required>
+                    <div class="password-strength" id="password-strength">
+                        <div class="strength-bar"></div>
+                        <span class="strength-text">Password Strength</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirm-password">Confirm Password</label>
+                    <input type="password" id="confirm-password" placeholder="Confirm password" required>
+                    <div class="password-match" id="password-match"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email (Optional)</label>
+                    <input type="email" id="email" placeholder="Enter email">
+                </div>
+
+                <div class="form-group">
+                    <label for="security-question">Security Question</label>
+                    <select id="security-question">
+                        <option value="">Select a security question</option>
+                        <option value="mother">What is your mother's maiden name?</option>
+                        <option value="pet">What was your first pet's name?</option>
+                        <option value="school">What was the name of your first school?</option>
+                        <option value="city">In what city were you born?</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="security-answer">Security Answer</label>
+                    <input type="text" id="security-answer" placeholder="Enter answer">
+                </div>
+
+                <div class="terms">
+                    <input type="checkbox" id="terms" required>
+                    <label for="terms">I agree to the <a href="#" onclick="showTerms()">Terms of Service</a> and <a
+                            href="#" onclick="showPrivacy()">Privacy Policy</a></label>
+                </div>
+
+                <button type="submit" class="create-btn">Create Account</button>
+                <button type="button" class="cancel-btn" onclick="closeModal()">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    
+
+    <!-- Add to login-page.html - Help & Support Modal -->
+    <div class="modal help-modal" id="help-modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeHelpModal()">&times;</span>
+
+            <div class="help-header">
+                <h2 class="help-glitch" data-text="SYSTEM SUPPORT">SYSTEM SUPPORT</h2>
+                <div class="help-subtitle">ACCESS GRANTED - WELCOME TO THE MATRIX</div>
+            </div>
+
+            <!-- System Status -->
+            <div class="status-indicators">
+                <div class="status-item">
+                    <div class="status-dot status-online"></div>
+                    <span>Login: Online</span>
+                </div>
+                <div class="status-item">
+                    <div class="status-dot status-online"></div>
+                    <span>Database: Online</span>
+                </div>
+                <div class="status-item">
+                    <div class="status-dot status-online"></div>
+                    <span>Security: Active</span>
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="quick-links">
+                <div class="quick-link-card" onclick="scrollToSection('faq-section')">
+                    <div class="quick-link-icon">❓</div>
+                    <h4>FAQ</h4>
+                    <p>Frequently Asked Questions</p>
+                </div>
+                <div class="quick-link-card"
+                    onclick="document.getElementById('contact-form').scrollIntoView({behavior: 'smooth'})">
+                    <div class="quick-link-icon">📧</div>
+                    <h4>Contact</h4>
+                    <p>Send Message to Support</p>
+                </div>
+                <div class="quick-link-card" onclick="window.open('https://matrix.org', '_blank')">
+                    <div class="quick-link-icon">🌐</div>
+                    <h4>Documentation</h4>
+                    <p>Official Guides & Manuals</p>
+                </div>
+                <div class="quick-link-card" onclick="resetTutorial()">
+                    <div class="quick-link-icon">🔄</div>
+                    <h4>Reset Tutorial</h4>
+                    <p>Show Welcome Tutorial</p>
+                </div>
+            </div>
+
+            <!-- FAQ Section -->
+            <div class="faq-container" id="faq-section">
+                <h3 style="color: #00ccff; margin-bottom: 15px; text-align: center;">FREQUENTLY ASKED QUESTIONS</h3>
+
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFAQ(this)">
+                        <h3>How do I reset my password?</h3>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            Click "Forgot Password?" on the login page. You'll need to provide either your username or
+                            email address. A password reset link will be sent to your registered email address with the
+                            @matrix.com domain.
+                            <br><br>
+                            <strong>Note:</strong> If you used a username without an email, your default email is
+                            username@matrix.com
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFAQ(this)">
+                        <h3>Can I sign in anonymously?</h3>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            Yes! Click the "Sign in Anonymously" button to generate a temporary guest account. Anonymous
+                            accounts:
+                            <ul>
+                                <li>Are automatically generated</li>
+                                <li>Have limited features</li>
+                                <li>Expire after 24 hours of inactivity</li>
+                                <li>Cannot be recovered if lost</li>
+                            </ul>
+                            For permanent access, create a regular account.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFAQ(this)">
+                        <h3>Why is my username not available?</h3>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            Usernames must be unique across the system. If a username is taken, try:
+                            <ul>
+                                <li>Adding numbers (e.g., neo123)</li>
+                                <li>Using underscores (e.g., the_one)</li>
+                                <li>Combining words (e.g., matrixRider)</li>
+                                <li>Making it longer (minimum 3 characters)</li>
+                            </ul>
+                            Common names like "neo", "trinity", and "morpheus" are usually taken.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFAQ(this)">
+                        <h3>What are the password requirements?</h3>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            For optimal security:
+                            <ul>
+                                <li>Minimum 8 characters (recommended 12+)</li>
+                                <li>At least one uppercase letter</li>
+                                <li>At least one number</li>
+                                <li>At least one special character</li>
+                                <li>Not based on personal information</li>
+                            </ul>
+                            The system shows real-time strength indicators. <strong>Strong</strong> passwords are
+                            recommended.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFAQ(this)">
+                        <h3>Is my data secure?</h3>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <strong>YES.</strong> We implement military-grade encryption:
+                            <ul>
+                                <li>End-to-end encryption for all messages</li>
+                                <li>Zero-knowledge authentication</li>
+                                <li>No third-party data sharing</li>
+                                <li>Automatic session expiration</li>
+                                <li>No logs kept of your activities</li>
+                            </ul>
+                            Remember: "What happens here, stays here..."
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Emergency Button -->
+            <button class="emergency-btn" onclick="initiateEmergencyProtocol()">
+                <span style="font-size: 18px;">⚠️</span>
+                EMERGENCY LOCKDOWN
+            </button>
+
+            <!-- Contact Form -->
+            <div class="contact-form" id="contact-form">
+                <h3>CONTACT SUPPORT TEAM</h3>
+                <form id="support-form" onsubmit="submitSupportRequest(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="support-name">Your Name</label>
+                            <input type="text" id="support-name" placeholder="Enter your name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="support-email">Contact Email</label>
+                            <input type="email" id="support-email" placeholder="your@email.com" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="support-subject">Subject</label>
+                        <select id="support-subject" required>
+                            <option value="">Select an issue type</option>
+                            <option value="login">Login Problems</option>
+                            <option value="account">Account Issues</option>
+                            <option value="security">Security Concern</option>
+                            <option value="bug">Bug Report</option>
+                            <option value="feature">Feature Request</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="support-message">Message</label>
+                        <textarea id="support-message" placeholder="Describe your issue in detail..."
+                            required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="support-priority">Priority Level</label>
+                        <select id="support-priority">
+                            <option value="low">Low - General inquiry</option>
+                            <option value="medium" selected>Medium - Need assistance</option>
+                            <option value="high">High - Cannot access system</option>
+                            <option value="critical">Critical - Security breach</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="create-btn">Send Encrypted Message</button>
+                </form>
+            </div>
+
+            <div
+                style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(0, 204, 255, 0.2);">
+                <p style="color: rgba(0, 204, 255, 0.6); font-size: 12px;">
+                    Support available 24/7 • Average response time: 2 hours • Encryption level: AES-256
+                    <br>
+                    Last updated: System Time <span id="system-time"></span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/login-page/login-page.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>User Profile — Cypher Talk</title>
+	<!-- Use the redesigned CSS -->
+	<link rel="stylesheet" href="/userInfo-page/userInfo.css">
+
+	<!-- Load Supabase (matches other pages) -->
+	<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+	<!-- Matrix canvas for background -->
+	<canvas id="matrixCanvas"></canvas>
+
+	<!-- Toast container for messages -->
+	<div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+	<div class="profile-container">
+		<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+			<a href="/messages-page/main.html" class="btn" title="Back to Messenger">← Back to Messenger</a>
+		</div>
+
+		<h1>User Profile</h1>
+		<p class="small">Customize your profile settings</p>
+
+		<div class="profile-grid">
+			<!-- Left column: avatar and quick actions -->
+			<div class="card">
+				<div style="text-align:center">
+					<label for="avatarInput" class="avatar-picker" title="Click to change profile picture">
+						<img id="avatarPreview" class="avatar" alt="Avatar preview" src="/userInfo-page/defaultavatar.png" />
+						<div class="avatar-overlay">Change Avatar</div>
+					</label>
+					<input id="avatarInput" type="file" accept="image/*">
+					<div id="avatarInfo" class="small" aria-live="polite"></div>
+
+					<div style="margin-top:20px;">
+						<button type="button" id="resetAvatar" class="btn btn-ghost" style="width:100%;">Reset Avatar</button>
+					</div>
+				</div>
+			</div>
+
+			<!-- Right column: details and password -->
+			<div>
+				<form id="profileForm" class="card">
+					<h2>Profile Details</h2>
+					<div class="form-row">
+						<label for="displayName">Display Name</label>
+						<input id="displayName" name="displayName" placeholder="e.g. Neo" />
+					</div>
+					<div class="form-row" style="display:flex;gap:15px;">
+						<div style="flex:1">
+							<label for="firstName">First Name</label>
+							<input id="firstName" name="firstName" />
+						</div>
+						<div style="flex:1">
+							<label for="lastName">Last Name</label>
+							<input id="lastName" name="lastName" />
+						</div>
+					</div>
+					<div class="form-row">
+						<label for="email">Email</label>
+						<input id="email" name="email" type="email" placeholder="user@matrix.com" />
+					</div>
+					<div class="form-row">
+						<label for="description">Description / Bio</label>
+						<textarea id="description" name="description" placeholder="Tell people about yourself..."></textarea>
+					</div>
+
+					<div class="profile-form-actions">
+						<button type="button" id="saveProfile" class="btn btn-primary">Save Profile</button>
+						<button type="button" id="resetProfile" class="btn btn-ghost">Reset</button>
+						<div id="saveMsg" class="message small" aria-live="polite"></div>
+					</div>
+				</form>
+
+				<div class="card" style="margin-top:20px;">
+					<h2>Change Password</h2>
+					<div class="form-row">
+						<label for="currentPassword">Current Password</label>
+						<input id="currentPassword" type="password" />
+					</div>
+					<div class="form-row">
+						<label for="newPassword">New Password</label>
+						<input id="newPassword" type="password" />
+					</div>
+					<div class="form-row">
+						<label for="confirmPassword">Confirm New Password</label>
+						<input id="confirmPassword" type="password" />
+					</div>
+					<div style="display:flex;gap:10px;align-items:center;">
+						<button id="changePwd" class="btn btn-primary">Change Password</button>
+						<div id="pwdMsg" class="message small" aria-live="polite"></div>
+					</div>
+				</div>
+
+				<div class="card" style="margin-top:20px;">
+					<h2>Import/Export</h2>
+					<div class="actions">
+						<button id="exportProfile" class="btn btn-ghost">Export Profile</button>
+						<button id="importProfileBtn" class="btn btn-ghost">Import Profile</button>
+						<input id="importProfile" type="file" accept=".json" style="display:none">
+					</div>
+				</div>
+
+				<!-- Add this Delete Account section -->
+				<div class="card" style="margin-top:20px; border-color: #ff00ff;">
+					<h2 style="color: #ff00ff;">Danger Zone</h2>
+					<p style="color: rgba(255, 0, 255, 0.8); font-size: 13px; margin-bottom: 15px;">
+						Warning: This action is irreversible. All your messages, profile data, and account information will be
+						permanently deleted.
+					</p>
+					<button id="deleteAccountBtn" class="btn" style="border-color: #ff00ff; color: #ff00ff; width: 100%;">
+						⚠️ Delete My Account
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Delete Account Modal -->
+	<div id="deleteModal" class="modal" style="display: none;">
+		<div class="modal-content" style="max-width: 500px; border-color: #ff00ff;">
+			<span class="close-modal" onclick="closeDeleteModal()">&times;</span>
+			<h2 style="color: #ff00ff; text-align: center;">DELETE ACCOUNT</h2>
+
+			<div style="padding: 20px 0;">
+				<p style="color: rgba(255, 0, 255, 0.9); margin-bottom: 15px; text-align: center;">
+					⚠️ <strong>FINAL WARNING</strong> ⚠️
+				</p>
+				<p style="color: rgba(255, 255, 255, 0.8); margin-bottom: 20px; line-height: 1.5;">
+					This will permanently delete:
+				</p>
+				<ul style="color: rgba(255, 0, 255, 0.8); margin-left: 20px; margin-bottom: 25px;">
+					<li>Your account and login credentials</li>
+					<li>All your messages and conversation history</li>
+					<li>Your profile information and settings</li>
+					<li>Any uploaded files or avatars</li>
+					<li>All associated data in our database</li>
+				</ul>
+
+				<div class="form-row">
+					<label for="confirmUsername" style="color: #ff00ff;">Type your username to confirm:</label>
+					<input type="text" id="confirmUsername" placeholder="Enter your username"
+						style="border-color: #ff00ff; color: #ff00ff; background: rgba(255, 0, 255, 0.05);">
+				</div>
+
+				<div class="form-row">
+					<label for="confirmPasswordDel" style="color: #ff00ff;">Enter your password:</label>
+					<input type="password" id="confirmPasswordDel" placeholder="Enter your password"
+						style="border-color: #ff00ff; color: #ff00ff; background: rgba(255, 0, 255, 0.05);">
+				</div>
+
+				<div style="display: flex; gap: 10px; margin-top: 25px;">
+					<button id="confirmDeleteBtn" class="btn"
+						style="flex: 1; border-color: #ff00ff; color: #ff00ff; background: rgba(255, 0, 255, 0.1);">
+						🗑️ DELETE PERMANENTLY
+					</button>
+					<button onclick="closeDeleteModal()" class="btn btn-ghost" style="flex: 1;">
+						Cancel
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="userInfo.js"></script>
+</body>
+
+</html>

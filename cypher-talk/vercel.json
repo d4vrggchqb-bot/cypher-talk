@@ -1,0 +1,29 @@
+{
+  "public": true,
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/flash-screen.html"
+    },
+    {
+      "source": "/onboarding",
+      "destination": "/onboarding-screen/obs.html"
+    },
+    {
+      "source": "/login",
+      "destination": "/login-page/login-page.html"
+    },
+    {
+      "source": "/chat",
+      "destination": "/messages-page/main.html"
+    },
+    {
+      "source": "/about",
+      "destination": "/about-us-page/about.html"
+    },
+    {
+      "source": "/features",
+      "destination": "/feature-page.html"
+    }
+  ]
+}
