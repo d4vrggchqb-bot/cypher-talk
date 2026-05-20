@@ -1,8 +1,8 @@
-# 🔐 CipherChat - Encrypted Messaging Web App
+# 🔐 CypherTalk - Encrypted Messaging Web App
 
 A cyberpunk-themed end-to-end encrypted messaging application with multiple classical cipher implementations. Built with vanilla JavaScript and Supabase.
 
-![CipherChat Banner](https://img.shields.io/badge/Encryption-E2EE-00ff9f?style=for-the-badge)
+![CypherTalk Banner](https://img.shields.io/badge/Encryption-E2EE-00ff9f?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-00ccff?style=for-the-badge)
 ![Status](https://img.shields.io/badge/Status-Active-ff00ff?style=for-the-badge)
 
@@ -141,7 +141,7 @@ A cyberpunk-themed end-to-end encrypted messaging application with multiple clas
 ## 📁 Project Structure
 
 ```
-cipherchat/
+cyphertalk/
 ├── login-page/
 │   ├── index.html          # Login/signup page
 │   ├── login-page.css      # Login page styles
